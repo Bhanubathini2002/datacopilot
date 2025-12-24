@@ -1,0 +1,112 @@
+from google.cloud import bigquery
+# import asyncio
+import pandas as pd
+import os
+from agents import EmbedderAgent
+
+
+embedder = EmbedderAgent('vertex')
+
+
+async def setup_kgq_table( project_id,
+                            instance_name,
+                            database_name,
+                            schema,
+                            database_user,
+                            database_password,
+                            region,
+                            VECTOR_STORE = "cloudsql-pgvector"):
+    """ 
+    This function sets up or refreshes the Vector Store for Known Good Queries (KGQ)
+    """
+    if VECTOR_STORE=='bigquery-vector':
+
+        # Create BQ Client
+        client=bigquery.Client(project=project_id)
+
+        # Delete an old table
+        # client.query_and_wait(f'''DROP TABLE IF EXISTS `{project_id}.{schema}.example_prompt_sql_embeddings`''')
+        # Create a new emptry table
+        client.query_and_wait(f'''CREATE TABLE IF NOT EXISTS `{project_id}.{schema}.example_prompt_sql_embeddings` (
+                              user_grouping string NOT NULL, example_user_question string NOT NULL, example_generated_sql string NOT NULL,
+                              embedding ARRAY<FLOAT64>)''')
+        
+
+
+    else: raise ValueError("Not a valid parameter for a vector store.")
+
+
+async def store_kgq_embeddings(df_kgq, 
+                            project_id,
+                            instance_name,
+                            database_name,
+                            schema,
+                            database_user,
+                            database_password,
+                            region,
+                            VECTOR_STORE = "cloudsql-pgvector"
+                            ):
+    """ 
+    Create and save the Known Good Query Embeddings to Vector Store  
+    """
+    if VECTOR_STORE=='bigquery-vector':
+
+        client=bigquery.Client(project=project_id)
+        
+        example_sql_details_chunked = []
+
+        for _, row_aug in df_kgq.iterrows():
+
+            example_user_question = str(row_aug['prompt'])
+            example_generated_sql = str(row_aug['sql'])
+            example_grouping = str(row_aug['user_grouping'])
+            emb =  embedder.create(example_user_question)
+            
+
+            r = {"example_grouping":example_grouping,"example_user_question": example_user_question,"example_generated_sql": example_generated_sql,"embedding": emb}
+            example_sql_details_chunked.append(r)
+
+        example_prompt_sql_embeddings = pd.DataFrame(example_sql_details_chunked)
+
+        client.query_and_wait(f'''CREATE TABLE IF NOT EXISTS `{project_id}.{schema}.example_prompt_sql_embeddings` (
+            user_grouping string NOT NULL, example_user_question string NOT NULL, example_generated_sql string NOT NULL,
+            embedding ARRAY<FLOAT64>)''')
+
+        for _, row in example_prompt_sql_embeddings.iterrows():
+                client.query_and_wait(f'''DELETE FROM `{project_id}.{schema}.example_prompt_sql_embeddings`
+                            WHERE user_grouping= '{row["example_grouping"]}' and example_user_question= "{row["example_user_question"]}" '''
+                                )
+                    # embedding=np.array(row["embedding"])
+                cleaned_sql = row["example_generated_sql"].replace("\r", " ").replace("\n", " ")
+                client.query_and_wait(f'''INSERT INTO `{project_id}.{schema}.example_prompt_sql_embeddings` 
+                    VALUES ("{row["example_grouping"]}","{row["example_user_question"]}" , 
+                    "{cleaned_sql}",{row["embedding"]} )''')
+                
+    else: raise ValueError("Not a valid parameter for a vector store.")
+
+
+
+def load_kgq_df():
+    import pandas as pd
+
+    def is_root_dir():
+        current_dir = os.getcwd()
+        notebooks_path = os.path.join(current_dir, "notebooks")
+        agents_path = os.path.join(current_dir, "agents")
+        
+        return os.path.exists(notebooks_path) or os.path.exists(agents_path)
+
+    if is_root_dir():
+        current_dir = os.getcwd()
+        root_dir = current_dir
+    else:
+        root_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
+
+    file_path = root_dir + "/scripts/known_good_sql.csv"
+
+    # Load the file
+    df_kgq = pd.read_csv(file_path)
+    df_kgq = df_kgq.loc[:, ["prompt", "sql", "user_grouping"]]
+    df_kgq = df_kgq.dropna()
+
+    return df_kgq

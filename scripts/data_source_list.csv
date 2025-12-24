@@ -1,0 +1,4 @@
+source,user_grouping,schema,table
+bigquery,MovieExplorer-bigquery,imdb_people,name_basics
+bigquery,MovieExplorer-bigquery,imdb_people,title_principals
+bigquery,MovieExplorer-bigquery,imdb_ratings,reviews
