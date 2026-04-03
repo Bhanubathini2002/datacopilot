@@ -1,107 +1,233 @@
-Qna
-what is argparse ??
-    argparse is a module which lets you create a command line interface where you can pass arguments.
-what is each argument will do ??
-    Args:
-            user_question (str): The user's natural language question.
-            user_grouping (str): The name of the user grouping to query.
-            RUN_DEBUGGER (bool, optional): Whether to run the SQL debugger. Defaults to True.
-            EXECUTE_FINAL_SQL (bool, optional): Whether to execute the final SQL query. Defaults to True.
-            DEBUGGING_ROUNDS (int, optional): The number of debugging rounds to perform. Defaults to 3.
-            LLM_VALIDATION (bool, optional): Whether to use LLM for validation. Defaults to True.
-            Embedder_model (str, optional): The name of the embedding model. Defaults to 'vertex'.
-            SQLBuilder_model (str, optional): The name of the SQL builder model. Defaults to 'gemini-1.5-pro'.
-            SQLChecker_model (str, optional): The name of the SQL checker model. Defaults to 'gemini-1.0-pro'.
-            SQLDebugger_model (str, optional): The name of the SQL debugger model. Defaults to 'gemini-1.0-pro'.
-            Responder_model (str, optional): The name of the responder model. Defaults to 'gemini-1.0-pro'.
-            num_table_matches (int, optional): The number of table matches to retrieve. Defaults to 5.
-            num_column_matches (int, optional): The number of column matches to retrieve. Defaults to 10.
-            table_similarity_threshold (float, optional): The similarity threshold for table matching. Defaults to 0.3.
-            column_similarity_threshold (float, optional): The similarity threshold for column matching. Defaults to 0.3.
-            example_similarity_threshold (float, optional): The similarity threshold for example matching. Defaults to 0.3.
-            num_sql_matches (int, optional): The number of similar SQL queries to retrieve. Defaults to 3.
-how did you handle exception handling ??
-what is telemetry and have you used it & why ??
-what is pandas??
-how to read csv file and excel file using pandas ???
-how to impliment logging in python??
-how do you connect to bq using python??
-how to create dataset in bd using python??
-what is the meaning of os.path.join  and  os.path.exest??
-what is the database schema ??
-what is a package db datatype means and why did you use it??
-what is a package tabulate means and why did you use it??
-how did you creat emmbdingds ??
+# DataCopilot
 
-process
+DataCopilot is an AI-powered data intelligence assistant that helps users interact with enterprise data using natural language. It translates business questions into SQL, validates and debugs queries, executes them on connected data sources, and returns both concise insights and visualizations.
 
-i created the "main" class where we pass the arguments.    ###  if __name__ == '__main__':
-then i initiated the command line interface (argparse) to pass arguments.   ###parser = argparse.ArgumentParser(description="Open Data QnA SQL Generation")
-here i got the error of argparse so then i imported the module argparse on top of file v   ####  import argparse
-then i passed the arguments  with perametters .
-    ###
-    parser.add_argument("--session_id", type=str, required=True, help="Session Id")
-    parser.add_argument("--user_question", type=str, required=True, help="The user's question.")
-    parser.add_argument("--user_grouping", type=str, required=True, help="The user grouping specificed in the source list CSV file")
-    # Optional Arguments for run_pipeline Parameters
-    parser.add_argument("--run_debugger", action="store_true", help="Enable the debugger (default: True)")
-    parser.add_argument("--execute_final_sql", action="store_true", help="Execute the final SQL (default: True)")
-    parser.add_argument("--debugging_rounds", type=int, default=2, help="Number of debugging rounds (default: 3)")
-    parser.add_argument("--llm_validation", action="store_true", help="Enable LLM validation (default: True)")
-    parser.add_argument("--embedder_model", type=str, default='vertex', help="Embedder model name (default: 'vertex')")
-    parser.add_argument("--sqlbuilder_model", type=str, default='gemini-2.5-pro', help="SQL builder model name (default: 'gemini-1.0-pro')")
-    parser.add_argument("--sqlchecker_model", type=str, default='gemini-2.5-pro', help="SQL checker model name (default: 'gemini-1.0-pro')")
-    parser.add_argument("--sqldebugger_model", type=str, default='gemini-2.5-pro', help="SQL debugger model name (default: 'gemini-1.0-pro')")
-    parser.add_argument("--responder_model", type=str, default='gemini-2.5-pro', help="Responder model name (default: 'gemini-1.0-pro')")
-    parser.add_argument("--num_table_matches", type=int, default=5, help="Number of table matches (default: 5)")
-    parser.add_argument("--num_column_matches", type=int, default=10, help="Number of column matches (default: 10)")
-    parser.add_argument("--table_similarity_threshold", type=float, default=0.1, help="Threshold for table similarity (default: 0.1)")
-    parser.add_argument("--column_similarity_threshold", type=float, default=0.1, help="Threshold for column similarity (default: 0.1)")
-    parser.add_argument("--example_similarity_threshold", type=float, default=0.1, help="Threshold for example similarity (default: 0.1)")
-    parser.add_argument("--num_sql_matches", type=int, default=3, help="Number of SQL matches (default: 3)")   
+## Overview
 
-pass the argument  ##     args = parser.parse_args()
-now we use argument values in run_pipeline   
-     ####
-      final_sql, response, _resp = asyncio.run(run_pipeline(args.session_id,
-        args.user_question,
-        args.user_grouping,
-        RUN_DEBUGGER=args.run_debugger,
-        EXECUTE_FINAL_SQL=args.execute_final_sql,
-        DEBUGGING_ROUNDS=args.debugging_rounds,
-        LLM_VALIDATION=args.llm_validation,
-        Embedder_model=args.embedder_model,
-        SQLBuilder_model=args.sqlbuilder_model,
-        SQLChecker_model=args.sqlchecker_model,
-        SQLDebugger_model=args.sqldebugger_model,
-        Responder_model=args.responder_model,
-        num_table_matches=args.num_table_matches,
-        num_column_matches=args.num_column_matches,
-        table_similarity_threshold=args.table_similarity_threshold,
-        column_similarity_threshold=args.column_similarity_threshold,
-        example_similarity_threshold=args.example_similarity_threshold,
-        num_sql_matches=args.num_sql_matches
-    )) 
-where i got the error of run_pipeline saying not defined.
-then i defined run_pipeline with parametterspassed in arguments on top of "MAIN"
-     ####
-     async def run_pipeline(session_id,
-                user_question,
-                user_grouping,
-                RUN_DEBUGGER=True,
-                EXECUTE_FINAL_SQL=True,
-                DEBUGGING_ROUNDS = 3, 
-                LLM_VALIDATION=True,
-                Embedder_model='vertex',
-                SQLBuilder_model= 'gemini-1.5-pro',
-                SQLChecker_model= 'gemini-1.0-pro',
-                SQLDebugger_model= 'gemini-1.0-pro',
-                Responder_model= 'gemini-1.0-pro',
-                num_table_matches = 5,
-                num_column_matches = 10,
-                table_similarity_threshold = 0.3,
-                column_similarity_threshold = 0.3, 
-                example_similarity_threshold = 0.3, 
-                num_sql_matches=3): 
+Modern business users often depend on analysts or SQL experts to answer data questions. DataCopilot reduces that bottleneck by enabling a conversational analytics experience where users can ask questions in plain English and receive:
 
-now i got an error of async so i imported the module async    ### import asyncio    
+- Generated SQL queries
+- Query validation and correction
+- Executed results from connected databases
+- Natural-language explanations
+- Recommended charts and visual summaries
+
+This project was inspired by modular text-to-SQL and agentic analytics systems, and extends that idea into a practical, production-oriented data assistant.
+
+## Key Features
+
+- Natural language to SQL generation
+- Retrieval-augmented context using schema and metadata embeddings
+- SQL validation before execution
+- Debugging and iterative query correction
+- Natural-language answer generation from SQL output
+- Chart recommendation and visualization generation
+- Session-aware conversational workflow
+- Logging for traceability and improvement
+- Extensible multi-agent architecture
+
+## Architecture
+
+DataCopilot follows an agent-based architecture where each component is responsible for a specific stage in the analytics workflow:
+
+1. The user submits a business question through the frontend.
+2. The retrieval layer fetches relevant table metadata, schema context, and known-good SQL examples.
+3. The SQL Generator Agent produces a candidate SQL query.
+4. The Validation Agent checks syntax and semantic correctness.
+5. The Debugging Agent fixes failed or low-confidence queries.
+6. The query is executed against the source database.
+7. The Response Agent converts results into a business-friendly explanation.
+8. The Visualization Agent recommends suitable charts for the result set.
+9. Logs and session context are stored for future follow-up queries and observability.
+
+## Architecture Diagram
+
+```mermaid
+flowchart LR
+    A[Business / Technical User] --> B[Frontend Application]
+    B --> C[Query Orchestrator]
+
+    C --> D[Embedding / Retrieval Agent]
+    D --> E[Vector Store<br/>Schema Embeddings<br/>Column Embeddings<br/>Known Good SQL]
+
+    C --> F[SQL Generator Agent]
+    E --> F
+
+    F --> G[Validation Agent]
+    G -->|Valid| H[Query Executor]
+    G -->|Invalid| I[Debugging Agent]
+    I --> F
+
+    H --> J[(Source Database)]
+    H --> K[Execution Results]
+
+    K --> L[Response Agent]
+    B --> L
+    L --> M[Natural Language Answer]
+
+    K --> N[Visualization Agent]
+    N --> O[Charts / Insights]
+
+    C --> P[(Session Store)]
+    H --> Q[(Logs / Monitoring)]
+
+    M --> B
+    O --> B
+    B --> R[User Response]
+```
+
+## Tech Stack
+
+### Frontend
+- Streamlit / React / Next.js *(update based on your implementation)*
+
+### Backend
+- Python
+- FastAPI / Flask *(update as needed)*
+
+### AI / LLM Layer
+- OpenAI / Azure OpenAI / Gemini / Anthropic *(choose what you actually used)*
+- LangChain / LangGraph / custom orchestration
+
+### Data Layer
+- PostgreSQL / BigQuery / MySQL / SQL Server *(choose actual DBs)*
+- Vector database for schema and SQL retrieval
+
+### Observability
+- Logging database
+- Query traces
+- Session memory
+
+## Workflow
+
+### 1. User Question
+A user asks a business question such as:
+> “Show me the top suppliers in West Africa with emission reduction commitments.”
+
+### 2. Context Retrieval
+The system retrieves relevant schema information, similar SQL examples, and metadata from the vector store.
+
+### 3. SQL Generation
+The SQL generation agent creates a candidate query using the user prompt and retrieved context.
+
+### 4. Validation and Debugging
+The generated SQL is validated. If it fails or looks unreliable, the debugging agent iteratively refines it.
+
+### 5. Query Execution
+The approved SQL runs on the target data source.
+
+### 6. Response Generation
+The result is summarized in natural language so business users can understand it quickly.
+
+### 7. Visualization
+When appropriate, charts are suggested or generated automatically to make the output more intuitive.
+
+## Repository Structure
+
+```bash
+datacopilot/
+│── app/                     # Frontend or application entrypoints
+│── backend/                 # APIs, orchestration, services
+│── agents/                  # SQL, validation, debugging, response, visualization agents
+│── retrieval/               # Embeddings, vector search, schema context
+│── database/                # DB connectors, query execution, models
+│── prompts/                 # Prompt templates
+│── utils/                   # Shared utilities
+│── logs/                    # Logs or observability assets
+│── notebooks/               # Experiments / evaluations
+│── assets/                  # Images, GIFs, diagrams
+│── README.md
+│── requirements.txt
+│── .env.example
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.10+
+- Access to an LLM provider
+- Access to a supported relational database
+- API keys and environment configuration
+
+### Installation
+
+```bash
+git clone https://github.com/Bhanubathini2002/datacopilot.git
+cd datacopilot
+python -m venv .venv
+source .venv/bin/activate   # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### Environment Setup
+
+Create a `.env` file:
+
+```env
+LLM_API_KEY=your_api_key
+DB_HOST=your_host
+DB_PORT=your_port
+DB_NAME=your_database
+DB_USER=your_username
+DB_PASSWORD=your_password
+VECTOR_DB_URL=your_vector_db_url
+```
+
+### Run the Project
+
+```bash
+python app.py
+```
+
+_or_
+
+```bash
+streamlit run app.py
+```
+
+_update this section to match your actual entry point._
+
+## Example Use Cases
+
+- Business intelligence Q&A
+- Self-service analytics
+- Natural language reporting
+- SQL assistant for analysts
+- Executive dashboard copilots
+- Data exploration for non-technical stakeholders
+
+## Challenges Solved
+
+- Reduces dependency on manual SQL writing
+- Makes structured data more accessible to business users
+- Improves query accuracy with retrieval and validation
+- Handles failed SQL using iterative debugging
+- Produces both textual and visual insights from one workflow
+
+## Future Improvements
+
+- Role-based access control
+- Query cost estimation
+- Semantic layer integration
+- Dashboard export
+- Multi-database federation
+- Feedback loop for continuous prompt and SQL improvement
+- Evaluation benchmarks for text-to-SQL quality
+
+## Inspiration
+
+This project was inspired by agentic text-to-SQL and conversational analytics systems, especially Google Cloud’s Open Data QnA architecture, and was adapted into a custom DataCopilot workflow focused on practical enterprise analytics.
+
+## Author
+
+**Bhanu Prakash Bathini**  
+AI/ML Engineer | Generative AI | LLM Applications | Data Intelligence Systems
+
+- GitHub: https://github.com/Bhanubathini2002
+- LinkedIn: add-your-link
+- Portfolio: add-your-portfolio
+
+## License
+
+Add your preferred license here.
