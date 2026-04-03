@@ -79,18 +79,16 @@ flowchart LR
 ## Tech Stack
 
 ### Frontend
-- Streamlit / React / Next.js *(update based on your implementation)*
-
-### Backend
+- Streamlit / React / Next.js
 - Python
-- FastAPI / Flask *(update as needed)*
+- FastAPI
 
 ### AI / LLM Layer
-- OpenAI / Azure OpenAI / Gemini / Anthropic *(choose what you actually used)*
+- OpenAI / Azure OpenAI / Gemini / Anthropic 
 - LangChain / LangGraph / custom orchestration
 
 ### Data Layer
-- PostgreSQL / BigQuery / MySQL / SQL Server *(choose actual DBs)*
+- PostgreSQL / BigQuery / MySQL / SQL Server 
 - Vector database for schema and SQL retrieval
 
 ### Observability
@@ -150,43 +148,7 @@ datacopilot/
 - Access to a supported relational database
 - API keys and environment configuration
 
-### Installation
 
-```bash
-git clone https://github.com/Bhanubathini2002/datacopilot.git
-cd datacopilot
-python -m venv .venv
-source .venv/bin/activate   # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### Environment Setup
-
-Create a `.env` file:
-
-```env
-LLM_API_KEY=your_api_key
-DB_HOST=your_host
-DB_PORT=your_port
-DB_NAME=your_database
-DB_USER=your_username
-DB_PASSWORD=your_password
-VECTOR_DB_URL=your_vector_db_url
-```
-
-### Run the Project
-
-```bash
-python app.py
-```
-
-_or_
-
-```bash
-streamlit run app.py
-```
-
-_update this section to match your actual entry point._
 
 ## Example Use Cases
 
